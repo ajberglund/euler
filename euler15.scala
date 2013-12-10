@@ -1,37 +1,28 @@
 //Euler problem 15
 //http://projecteuler.net/problem=15
-//Compute number of ways to write integer N as sum of N+1 digits in (0 ... N)
-//For example, in the 2x2 example, there are 6 paths:
-//2 + 0 + 0
-//1 + 1 + 0
-//1 + 0 + 1
-//0 + 1 + 1
-//0 + 2 + 0
-//0 + 0 + 2
-// alternatively, imaging dropping N balls into N+1 urns
-// how many different configurations can result?
-// Denote this number by f(balls = N, urns = N+1)
-// Note, f(0, N) = 1 // or is this 1?
-// f(1, N) = N 
-// After dropping n in first urn, 
-// there are f(balls = N - n, urns = N ) remaining possibilities 
-// so f(N, N+1) = f(N, N) + f(N - 1, N) + f(N - 2, N) + ... + f(0, N)
+//Basic recurrence is
+//paths(n, m) = paths(n-1, m) + paths(n, m-1)
+//with 
+//paths(1, m) = 1
+//paths(n, 1) = 1
+//Solve recurrence with dynamic program (i.e. cache/'memoize' the results)
+//actually, i don't know if this is technically DP, but it works like a charm!
 
-// hmmm. poor.
-def f(balls: Long, urns: Long): Long = {
-  if(urns < 1) 0
-  else if (urns == 1) 1
-  else if (balls == 1) urns
-  else (0 until (balls + 1)).fold(0)((s,v) => s + f(v, urns - 1))
+object LatticePaths {
+  private val cache = collection.mutable.Map[(Int, Int), Long]()
+  private def fCache(n: Int, m: Int): Long = cache.getOrElseUpdate((n,m), f(n,m))
+
+  private def f(n: Int, m: Int): Long = {
+     if(n == 1 || m == 1) 1
+     else fCache(n - 1, m) + fCache(n, m - 1)
+  }
+
+  def apply(n: Int) = f(n + 1, n + 1)
 }
 
-// still poor
-def f2(n: Long, m: Long): Long = {
-  if(n == 1) 1
-  else if (m == 1) 1
-  else f2(n - 1, m) + f2(n, m - 1)
-}
+//scala> LatticePaths(2)
+//res9: Long = 6
+//
+//scala> LatticePaths(20)
+//res10: Long = 137846528820 // instantaneous!
 
-//this was lame, cause it took a couple of minutes
-//scala> f2(21,21)
-//res6: Long = 137846528820
