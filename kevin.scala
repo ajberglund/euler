@@ -16,7 +16,7 @@ object Sieve {
 }
 
 object Factor {
-  var primes = Sieve(100000).toSet
+  var primes = Sieve(100).toSet // alg is fastest when this set is in some sweet spot, not too large, not too small
 
   def addPrimes(newPrimes: Set[Int]) {
     primes ++= newPrimes
@@ -70,7 +70,21 @@ object Factor {
     (0 until f.length / 2).map(ix => f(2*ix))
   }
 
+  def isPerfectSquare(factors: Array[Int]) = desquare(factors).reduce(_*_) == 1
+
+  def factorsFormValidX(p: Int, factors: Array[Int], neg: Boolean = false) = {
+    // test whether x*(p*x + 2) is a perfect square, when x = prod(factors)
+    // try to factorize as little as possible
+    val term1 = factors.reduce(_*_)
+    val term2 = if(neg) {p*term1 - 2} else {p*term1 + 2}
+
+    val leftovers = desquare(factors)
+    leftovers.forall(term2 % _ == 0) && isPerfectSquare(factor(leftovers.fold(term2)(_ / _)))
+  }
+
   def desquare(s: Array[Int]): Array[Int] = {
+    // drop factors that occur in pairs, i.e. fctor out all perfect squares
+    // e.g. Array(1,2,2,2,2,3,4,4,5) -> Array(1,3,5)
     if (s.length == 1) {return s}
     else if (s.length == 2) { 
       if (s(0) == s(1)) return Array(1) 
@@ -92,13 +106,10 @@ object Factor {
     var happy = false
     var iter = 0
     while(!happy){
-      iter +=1
-      val desquaredProd = desquare(factor(x)).reduce(_*_)
-      val plus = p*x + 2
-      val minu = p*x - 2
+      val f = factor(x) // this is where all the time is spent...
       // first check
-      val plusWorks = (plus % desquaredProd == 0  && desquare(factor(plus / desquaredProd)).reduce(_*_)==1) 
-      val minusWorks = (minu % desquaredProd == 0 && desquare(factor(minu / desquaredProd)).reduce(_*_)==1)
+      val plusWorks = factorsFormValidX(p, f, false)//(plus % desquaredProd == 0  && desquare(factor(plus / desquaredProd)).reduce(_*_)==1) 
+      val minusWorks = factorsFormValidX(p, f, true)//(minu % desquaredProd == 0 && desquare(factor(minu / desquaredProd)).reduce(_*_)==1)
 
       if(plusWorks || minusWorks){
         happy = true
