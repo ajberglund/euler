@@ -64,6 +64,25 @@ object Factor {
   def isPaired(s: Array[Int]) = s.length % 2 == 0 && {val srt = s.sorted; val l = s.length; (0 until l/2).forall{ix => srt(2*ix) ==
       srt(2*ix+1)}}
 
+  def sqrtPerfectSquare(factors: Array[Int]) = {
+    //returns the square root of x *under the assumption that factors are the prime factors of a perfect square!
+    val f = factors.sorted
+    (0 until f.length / 2).map(ix => f(2*ix))
+  }
+
+  def desquare(s: Array[Int]): Array[Int] = {
+    if (s.length == 1) {return s}
+    else if (s.length == 2) { 
+      if (s(0) == s(1)) return Array(1) 
+      else return s
+    }
+    else {
+      val (h,t) = s.sorted.splitAt(1)
+      if(h.head == t.head) {return desquare(t.tail)}
+      else { return h ++ desquare(t) }
+    }
+  }
+
   def main(args: Array[String]) {
     val p = args(0).toInt
     var x = 2
@@ -74,13 +93,25 @@ object Factor {
     var iter = 0
     while(!happy){
       iter +=1
-      val f1 = factor(x)
-      val f2 = factor(p*x + 2)
-      val f3 = factor(p*x - 2)
-      if(isPaired(f1 ++ f2) || isPaired(f1 ++ f2)){
+      val desquaredProd = desquare(factor(x)).reduce(_*_)
+      val plus = p*x + 2
+      val minu = p*x - 2
+      // first check
+      val plusWorks = (plus % desquaredProd == 0  && desquare(factor(plus / desquaredProd)).reduce(_*_)==1) 
+      val minusWorks = (minu % desquaredProd == 0 && desquare(factor(minu / desquaredProd)).reduce(_*_)==1)
+
+      if(plusWorks || minusWorks){
         happy = true
         println(x)
         println(s"Found it! x = ${x}")
+        if(plusWorks){
+          println(s"n = ${factor(p*x+1).mkString("*")}")
+          println(s"m = ${sqrtPerfectSquare(factor(x) ++ factor(p*x+2)).mkString("*")}")
+        } else {
+          println(s"n = ${factor(p*x-1).mkString("*")}")
+          println(s"m = ${sqrtPerfectSquare(factor(x) ++ factor(p*x-2)).mkString("*")}")
+        }
+        println(s"solves n^2 - ${p}*m^2 = 1")
       }else{
         x += 1
       } 
