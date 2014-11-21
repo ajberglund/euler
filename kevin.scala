@@ -16,73 +16,79 @@ object Sieve {
 }
 
 object Factor {
-  var primes = Sieve(100).toSet // alg is fastest when this set is in some sweet spot, not too large, not too small
-
-  def addPrimes(newPrimes: Set[Int]) {
-    primes ++= newPrimes
+  val primes = {
+    println("Initializing primes")
+    Sieve(100).map(_.toLong).toArray.sorted
   }
 
-  def factorAndAdd(x: Int): Array[Int] = {
-    val factors = factor(x)
-    val fSet = factors.toSet
-    if (!(fSet.diff(primes).isEmpty)){
-      addPrimes(fSet)
-    }
-    factors
-  }
+  def knownPrime(x: Long) = java.util.Arrays.binarySearch(primes, x) >= 0
 
-  def factor(x: Int):Array[Int] = {
+  def factor(x: Long):Array[Long] = {
     // first attempt factorization using known primes
     // if x is a known prime
-    if(primes.contains(x)){ return Array(x) } // x is prime
+    //if(primes.contains(x)){ return Array(x) } // x is prime
+    if(knownPrime(x)){ return Array(x) } // x is prime
 
+    val sq = math.sqrt(x)
     // search for factors among the current known primes
-    val knownPrimeFactors = primes.filter(x % _ == 0).toArray
-    
+    val knownPrimeFactors: Array[Long] = {
+      for {
+        prime <- primes
+        if prime <= sq && x % prime == 0
+      } yield prime
+    }
+   
     if (knownPrimeFactors.length != 0) {
       // we found some prime factors in our known set
       // divide these out and keep going
       val rem = knownPrimeFactors.foldLeft(x)(_ / _)
       if (rem == 1) {return knownPrimeFactors}
-      return knownPrimeFactors ++ factor(knownPrimeFactors.foldLeft(x)(_ / _))
+      return knownPrimeFactors ++ factor(rem)
     }
 
     // it is not a known prime, and we haven't found any factors in our known set:
     // brute force it
-    val fac = (2 to math.round(math.sqrt(x)).toInt).filter(x % _ == 0).headOption.getOrElse(x) 
+    val fac = {
+      var b = -1l
+      var candidate = primes(primes.length-1)
+      while (candidate <= sq && b < 0){
+        if (x % candidate == 0) b = candidate
+        candidate += 2 // skip even numbers
+      }
+      if (b < 0) x else b
+    }
 
     if (fac == x){ 
       // it has no divisors between 2 and sqrt(x), i.e. it is prime
       return Array(x)
     }else{
       val factors = Array(fac) ++ factor(x / fac)
-      // we brute forced this, so add the new primes to the known primes
       return factors
     }
   }
 
-  def isPaired(s: Array[Int]) = s.length % 2 == 0 && {val srt = s.sorted; val l = s.length; (0 until l/2).forall{ix => srt(2*ix) ==
-      srt(2*ix+1)}}
-
-  def sqrtPerfectSquare(factors: Array[Int]) = {
+  def sqrtPerfectSquare(factors: Array[Long]) = {
     //returns the square root of x *under the assumption that factors are the prime factors of a perfect square!
     val f = factors.sorted
     (0 until f.length / 2).map(ix => f(2*ix))
   }
 
-  def isPerfectSquare(factors: Array[Int]) = desquare(factors).reduce(_*_) == 1
+  def isPerfectSquare(factors: Array[Long]) = desquare(factors).reduce(_*_) == 1
 
-  def factorsFormValidX(p: Int, factors: Array[Int], neg: Boolean = false) = {
+  def factorsFormValidX(p: Int, factors: Array[Long], neg: Boolean = false) = {
     // test whether x*(p*x + 2) is a perfect square, when x = prod(factors)
     // try to factorize as little as possible
     val term1 = factors.reduce(_*_)
     val term2 = if(neg) {p*term1 - 2} else {p*term1 + 2}
 
     val leftovers = desquare(factors)
-    leftovers.forall(term2 % _ == 0) && isPerfectSquare(factor(leftovers.fold(term2)(_ / _)))
+    leftovers.forall(term2 % _ == 0) && {
+      val term3 = leftovers.fold(term2)(_/_)
+      isPerfectSquare(factor(term3))
+    }
   }
 
-  def desquare(s: Array[Int]): Array[Int] = {
+  def desquare(s: Array[Long]): Array[Long] = {
     // drop factors that occur in pairs, i.e. fctor out all perfect squares
     // e.g. Array(1,2,2,2,2,3,4,4,5) -> Array(1,3,5)
     if (s.length == 1) {return s}
@@ -99,17 +105,17 @@ object Factor {
 
   def main(args: Array[String]) {
     val p = args(0).toInt
-    var x = 2
+    var x = 2l
     if (args.length > 1){
-      x = args(1).toInt
+      x = args(1).toLong
     }
     var happy = false
-    var iter = 0
+    println("Starting at x = " + x)
     while(!happy){
       val f = factor(x) // this is where all the time is spent...
       // first check
-      val plusWorks = factorsFormValidX(p, f, false)//(plus % desquaredProd == 0  && desquare(factor(plus / desquaredProd)).reduce(_*_)==1) 
-      val minusWorks = factorsFormValidX(p, f, true)//(minu % desquaredProd == 0 && desquare(factor(minu / desquaredProd)).reduce(_*_)==1)
+      val plusWorks = factorsFormValidX(p, f, false)
+      val minusWorks = factorsFormValidX(p, f, true)
 
       if(plusWorks || minusWorks){
         happy = true
