@@ -142,18 +142,27 @@ object Factor {
       val minusWorks = factorsFormValidX(p, f, true)
       var happy = false
 
+      val eq = s"n^2-${p}*m^2=1"
+      var mString = ""
+      var nString = ""
+
       if(plusWorks || minusWorks){
         happy = true
         println(x)
         println(s"Found it! x = ${x}")
         if(plusWorks){
-          println(s"n = ${factor(p*x+1).mkString("*")}")
-          println(s"m = ${sqrtPerfectSquare(factor(x) ++ factor(p*x+2)).mkString("*")}")
+          nString = s"n=${factor(p*x+1).mkString("*")}"
+          mString = s"m=${sqrtPerfectSquare(factor(x) ++ factor(p*x+2)).mkString("*")}"
         } else {
-          println(s"n = ${factor(p*x-1).mkString("*")}")
-          println(s"m = ${sqrtPerfectSquare(factor(x) ++ factor(p*x-2)).mkString("*")}")
+          nString = s"n=${factor(p*x-1).mkString("*")}"
+          mString = s"m=${sqrtPerfectSquare(factor(x) ++ factor(p*x-2)).mkString("*")}"
         }
-        println(s"solves n^2 - ${p}*m^2 = 1")
+        println(eq)
+        println(nString)
+        println(mString)
+        import scala.sys.process._
+        val cmd = {s"""echo "${nString}\n${mString}""""} #| {s"""mail -s "${eq}" berglund@quantifind.com"""}
+        cmd.!
       }
       happy
   }
