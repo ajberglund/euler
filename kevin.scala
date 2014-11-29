@@ -166,4 +166,45 @@ object Factor {
       }
       happy
   }
+
+  def checkEveryKnownPrime(p: Int, cur: collection.mutable.Buffer[Long]): Option[collection.mutable.Buffer[Long]] = {
+    {for {
+      newP <- primes
+      f = cur :+ newP
+      if altCheckFromPrimes(f, p)
+    } yield f}.headOption
+  }
+
+  def altCheckFromPrimes(f: Seq[Long], p: Int) = {
+    altCheck((f++f).toBuffer.sorted, collection.mutable.Buffer[Long](), p, 0)
+  }
+
+  def altCheck(m: Long, p: Int): Boolean = {
+    val f1 = factor(m).toBuffer
+    altCheck((f1++f1).sorted, collection.mutable.Buffer[Long](), p, 0)
+  }
+
+  def altCheck(f1: collection.mutable.Buffer[Long], f2: collection.mutable.Buffer[Long], p: Int, k0: Int): Boolean = {
+        val A = f1.fold(1l)(_*_)
+        val B = f2.fold(1l)(_*_)
+
+        if(B == A*p + 2){
+                println("Positive branch!")
+                return true
+        }
+        if(B == A*p - 2){
+                println("Negative branch!")
+                return true
+        }
+
+        if(k0 > (f1.length - 1) || B > A*p+2) { return false } // nothing else to try
+
+        // move the k0 element from f1 to f2, check and/or continue
+        val f2k = f2.clone
+        val f1k = f1.clone
+        f2k.append(f1(k0))
+        f1k.remove(k0)
+
+        altCheck(f1k,f2k.sorted,p,0) || altCheck(f1,f2,p,k0 + 1)
+  }
 }
