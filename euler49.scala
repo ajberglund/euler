@@ -18,11 +18,12 @@ def solve() = {
   val candidates = 
     for{
       j <- 0 until pr.length
-      p1 = pr(j); 
-      k <- 1+java.util.Arrays.binarySearch(pr, p1) until pr.length 
+      k <- j+1 until pr.length 
+      p1 = pr(j) 
       p2 = pr(k)
-      if (java.util.Arrays.binarySearch(pr, 2*p2-p1) > -1)
-    } yield (p1,p2,2*p2-p1)
+      p3 = 2*p2 - p1
+      if (java.util.Arrays.binarySearch(pr, p3) > -1)
+    } yield (p1,p2,p3)
 
   // filter to triplets with all the same digits
   candidates.filter{case (p1,p2,p3) => digits(p1).sorted == digits(p2).sorted && digits(p2).sorted == digits(p3).sorted}
