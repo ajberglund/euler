@@ -1,5 +1,9 @@
 object Util{
   val primes = collection.mutable.Buffer[Long](2l, 3l)
+  def primesPast(n: Int) = {
+    while(maxPrime < n){growPrimes()}
+    primes
+  }
   def maxPrime = primes(primes.length - 1)
 
   def growPrimes() {
