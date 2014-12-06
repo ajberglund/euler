@@ -1,3 +1,5 @@
+package com.ajberglund.euler
+
 object Util{
   val primes = collection.mutable.Buffer[Long](2l, 3l)
   def primesPast(n: Int) = {

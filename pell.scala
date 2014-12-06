@@ -1,5 +1,7 @@
+package com.ajberglund.euler
+
 object Pell{
-  def euler66 = {
+  def euler66() = {
     // all pell solutions for non-square x between 2 and 1000
     val res = (2 to 1000).filter{x => !(1 until x).exists(s => s*s == x)}.map(Pell(_))
     // find the one with the largest value of n

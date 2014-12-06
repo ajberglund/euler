@@ -26,8 +26,9 @@ class CappedInt {
   }
 }
 
-// solution to Euler 16:
-val i = new CappedInt // value = 1
-(0 until 1000).foreach{_ => i *= 2}
-println(i.digits.sum)
+object Euler16 {
+  val i = new CappedInt // value = 1
+  (0 until 1000).foreach{_ => i *= 2}
+  println(i.digits.sum)
+}
 

@@ -1,6 +1,6 @@
 object Euler43 {
   def apply() = {
-    for{
+    val pds = for{
       d <- (0 to 9).toArray.permutations
       if d.slice(1,4) % 2 == 0
       if d.slice(2,5) % 3 == 0
@@ -10,6 +10,8 @@ object Euler43 {
       if d.slice(6,9) % 13 == 0
       if d.slice(7,10) % 17 == 0
     } yield arrayToLong(d)
+
+    pds.sum
   }
 
   implicit def arrayToLong(a: Array[Int]): Long = a.foldLeft(0l)(10*_+_)
