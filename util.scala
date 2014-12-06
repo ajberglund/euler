@@ -1,5 +1,6 @@
 package com.ajberglund.euler
 
+// there's a much better prime generator in Sieve
 object Util{
   val primes = collection.mutable.Buffer[Long](2l, 3l)
   def primesPast(n: Int) = {
